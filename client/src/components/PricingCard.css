@@ -1,0 +1,167 @@
+/* ── Pricing Card ──────────────────────────────────────────────────────────── */
+.pricing-card-container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1;
+}
+
+.pc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.pc-title h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.pc-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.pc-competitor-box {
+  text-align: right;
+}
+
+.pc-comp-prices {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.pc-current-price {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pc-price-display {
+  font-size: 1.8rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+}
+
+/* ── Stock Editor ───────────────────────────────────────────────────────────── */
+.pc-stock-editor {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pc-stock-current {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.pc-stock-num {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.pc-stock-num.danger { color: var(--danger); }
+.pc-stock-num.ok     { color: var(--success); }
+.pc-reorder-hint {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.pc-stock-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.pc-stock-input {
+  flex: 1;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.pc-stock-input:focus { border-color: var(--accent); }
+.pc-stock-input::placeholder { color: var(--text-muted); }
+
+
+.pc-action-area {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.btn-optimize {
+  width: 100%;
+  padding: 14px;
+  font-size: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.pc-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--accent);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.pc-results {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.pc-result-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.pc-result-header h4 {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.pc-result-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.text-accent { color: #a78bfa !important; }
+.text-success { color: var(--success) !important; }

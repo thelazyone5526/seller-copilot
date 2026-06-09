@@ -1,0 +1,37 @@
+[
+  {
+    "name": "TechSupply Co.",
+    "contact_email": "orders@techsupply.com",
+    "contact_name": "Jane Smith",
+    "payment_terms": "NET30",
+    "avg_lead_time_days": 7
+  },
+  {
+    "name": "GlobalGoods Ltd.",
+    "contact_email": "procurement@globalgoods.com",
+    "contact_name": "Carlos Rivera",
+    "payment_terms": "NET45",
+    "avg_lead_time_days": 14
+  },
+  {
+    "name": "FastShip Partners",
+    "contact_email": "supply@fastship.io",
+    "contact_name": "Priya Patel",
+    "payment_terms": "NET15",
+    "avg_lead_time_days": 3
+  },
+  {
+    "name": "QuickStock Inc.",
+    "contact_email": "hello@quickstock.com",
+    "contact_name": "David Lee",
+    "payment_terms": "NET30",
+    "avg_lead_time_days": 5
+  },
+  {
+    "name": "MegaSource Trading",
+    "contact_email": "orders@megasource.biz",
+    "contact_name": "Aisha Nguyen",
+    "payment_terms": "NET60",
+    "avg_lead_time_days": 21
+  }
+]

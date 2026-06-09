@@ -26,14 +26,5 @@ const productSchema = new mongoose.Schema(
   { collection: 'products' }
 );
 
-productSchema.pre('save', function (next) {
-  this.updated_at = Date.now();
-  next();
-});
-
-productSchema.pre(['findOneAndUpdate', 'updateOne', 'updateMany'], function (next) {
-  this.set({ updated_at: Date.now() });
-  next();
-});
 
 module.exports = mongoose.model('Product', productSchema);
