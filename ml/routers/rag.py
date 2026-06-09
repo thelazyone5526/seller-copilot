@@ -5,13 +5,9 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 import google.generativeai as genai
 from pymongo import MongoClient
-from sentence_transformers import SentenceTransformer
+from openai import OpenAI
 
 router = APIRouter()
-
-# Load SentenceTransformer once at startup
-print("[RAG Router] Loading SentenceTransformer model...")
-embedder = SentenceTransformer("all-MiniLM-L6-v2")
 
 class GenerateEmailRequest(BaseModel):
     product_context: Dict[str, Any]
@@ -19,56 +15,59 @@ class GenerateEmailRequest(BaseModel):
     supplier_id: str
     action_type: str  # "initial_request" | "price_negotiation"
 
+def _get_query_embedding(text: str, openai_client: OpenAI) -> list:
+    """Use OpenAI API for embeddings — no heavy local model needed."""
+    response = openai_client.embeddings.create(
+        model="text-embedding-3-small",
+        input=text
+    )
+    return response.data[0].embedding
+
 def _generate_with_llm(pc: Dict, sc: Dict, supplier_id: str, action_type: str) -> str:
-    # Safely get the API key
     api_key = os.getenv("GEMINI_API_KEY")
+    openai_api_key = os.getenv("OPENAI_API_KEY")
     mongo_uri = os.getenv("MONGO_URI")
-    
+
     if not api_key:
-        return "[Error: Missing GEMINI_API_KEY in .env file. Add your key and restart FastAPI.]"
-    if not mongo_uri:
-        return "[Error: Missing MONGO_URI in .env file.]"
+        return "[Error: Missing GEMINI_API_KEY]"
 
-    # --- 1. Vector Search Retrieval ---
-    try:
-        from bson import ObjectId
-        client = MongoClient(mongo_uri)
-        db = client.get_default_database()
-        
-        # Determine query for vector search based on action type
-        query_text = f"pricing and volume negotiation for {pc.get('name')} {pc.get('sku')}" if action_type == "price_negotiation" else f"invoice and stock for {pc.get('name')} {pc.get('sku')}"
-        query_vector = embedder.encode(query_text).tolist()
-        
-        # Atlas Vector Search pipeline
-        pipeline = [
-            {
-                "$vectorSearch": {
-                    "index": "supplier_vector_index",
-                    "path": "embedding",
-                    "queryVector": query_vector,
-                    "numCandidates": 10,
-                    "limit": 3,
-                    "filter": {"supplier_id": ObjectId(supplier_id)}
-                }
-            },
-            {
-                "$project": {
-                    "content": 1,
-                    "score": {"$meta": "vectorSearchScore"}
-                }
-            }
-        ]
-        
-        retrieved_docs = list(db.supplier_docs.aggregate(pipeline))
-        context_str = "\n".join([f"- {doc['content']}" for doc in retrieved_docs])
-        if not context_str:
-            context_str = "No past documents found for this supplier."
-            
-    except Exception as e:
-        print(f"Vector Search Error: {e}")
-        context_str = "[Failed to retrieve past context due to Vector Search error.]"
+    # --- 1. Vector Search Retrieval (optional) ---
+    context_str = "No past documents found for this supplier."
+    if openai_api_key and mongo_uri:
+        try:
+            from bson import ObjectId
+            openai_client = OpenAI(api_key=openai_api_key)
+            client = MongoClient(mongo_uri)
+            db = client.get_default_database()
 
-    # --- 2. LLM Generation ---
+            query_text = (
+                f"pricing and volume negotiation for {pc.get('name')} {pc.get('sku')}"
+                if action_type == "price_negotiation"
+                else f"invoice and stock for {pc.get('name')} {pc.get('sku')}"
+            )
+            query_vector = _get_query_embedding(query_text, openai_client)
+
+            pipeline = [
+                {
+                    "$vectorSearch": {
+                        "index": "supplier_vector_index",
+                        "path": "embedding",
+                        "queryVector": query_vector,
+                        "numCandidates": 10,
+                        "limit": 3,
+                        "filter": {"supplier_id": ObjectId(supplier_id)}
+                    }
+                },
+                {"$project": {"content": 1, "score": {"$meta": "vectorSearchScore"}}}
+            ]
+
+            retrieved_docs = list(db.supplier_docs.aggregate(pipeline))
+            if retrieved_docs:
+                context_str = "\n".join([f"- {doc['content']}" for doc in retrieved_docs])
+        except Exception as e:
+            print(f"Vector Search skipped: {e}")
+
+    # --- 2. LLM Generation with Gemini ---
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel('gemini-1.5-flash')
 
@@ -89,9 +88,8 @@ Past Context from Supplier Documents:
 Instructions:
 1. Include a clear subject line starting with "Subject: "
 2. Ask for availability, dispatch date, and if volume pricing applies.
-3. Reference the past context if relevant (e.g., past discounts).
-4. Be professional but firm about the urgency.
-5. Keep it under 150 words.
+3. Be professional but firm about the urgency.
+4. Keep it under 150 words.
 """
     else:
         prompt = f"""
@@ -108,18 +106,16 @@ Past Context from Supplier Documents:
 
 Instructions:
 1. Include a clear subject line starting with "Subject: "
-2. Ask for a better price due to our order volume and long relationship.
-3. Reference past negotiations or invoices from the provided context to strengthen our position.
-4. Ask to schedule a brief call this week.
-5. Keep it under 150 words.
+2. Ask for a better price due to volume and long relationship.
+3. Ask to schedule a brief call this week.
+4. Keep it under 150 words.
 """
 
     try:
         response = model.generate_content(prompt)
         return response.text.strip()
     except Exception as e:
-        # Fallback to local templates if Gemini fails
-        print(f"Gemini Error: {str(e)}. Falling back to local templates.")
+        print(f"Gemini Error: {str(e)}. Falling back to templates.")
         if action_type == "initial_request":
             return f"""Subject: Urgent Restock Request — {pc.get("name", "Product")} ({pc.get("sku", "N/A")})
 
@@ -128,10 +124,7 @@ Dear {sc.get("contact_name", "Procurement Team")},
 We urgently need to order {pc.get("suggested_reorder_qty")} units of {pc.get("name")}. 
 Our current inventory has fallen to {pc.get("current_stock")} units.
 
-Given our existing {sc.get("payment_terms", "NET30")} payment terms, please confirm:
-1. Availability of {pc.get("suggested_reorder_qty")} units
-2. Earliest possible dispatch date
-3. Any applicable volume pricing
+Given our {sc.get("payment_terms", "NET30")} payment terms, please confirm availability and earliest dispatch date.
 
 Best regards,
 Seller Copilot"""
@@ -140,10 +133,7 @@ Seller Copilot"""
 
 Dear {sc.get("contact_name", "Procurement Team")},
 
-We are planning to order {pc.get("suggested_reorder_qty")} units of {pc.get("name")}. 
-Given the volume of this order and our long-standing relationship, we would like to explore whether improved pricing is available.
-
-Could we schedule a brief call this week to discuss terms? 
+We are planning to order {pc.get("suggested_reorder_qty")} units of {pc.get("name")}. Given our order volume, could we discuss improved pricing? Can we schedule a call this week?
 
 Best regards,
 Seller Copilot"""
@@ -152,9 +142,7 @@ Seller Copilot"""
 def generate_email(payload: GenerateEmailRequest) -> Dict:
     pc = payload.product_context
     sc = payload.supplier_context
-
     draft = _generate_with_llm(pc, sc, payload.supplier_id, payload.action_type)
-
     return {
         "draft_email": draft,
         "action_type": payload.action_type,
