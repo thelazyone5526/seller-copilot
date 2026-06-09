@@ -19,7 +19,7 @@ export default function App() {
       setAlerts(alts);
       setError(null);
     } catch (err) {
-      setError('Cannot connect to backend. Make sure Node.js server is running on port 3001.');
+      setError('Cannot connect to backend. Please check if the server is running and VITE_API_URL is set.');
     } finally {
       setLoading(false);
     }
