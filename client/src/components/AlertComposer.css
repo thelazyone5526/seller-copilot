@@ -1,4 +1,7 @@
-/* ── Alert Composer ──────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Alert Composer — Light Theme
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 .alert-list {
   display: flex;
   flex-direction: column;
@@ -7,96 +10,145 @@
   flex: 1;
 }
 
+/* ── Alert Card ───────────────────────────────────────────────────────── */
 .alert-card {
-  padding: 16px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--border);
   transition: background var(--transition);
 }
-.alert-card:hover { background: var(--bg-card-hover); }
-.alert-card.expanded { background: var(--bg-surface); }
+
+.alert-card:last-child {
+  border-bottom: none;
+}
+
+.alert-card:hover {
+  background: #fafaf8;
+}
+
+.alert-card.expanded {
+  background: var(--bg-input);
+}
 
 .alert-card-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  gap: 10px;
 }
 
-.alert-info { display: flex; flex-direction: column; gap: 2px; }
+.alert-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .alert-sku {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-family: var(--font-mono);
   color: var(--accent);
   font-weight: 600;
-  letter-spacing: 0.04em;
-}
-.alert-product-name {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-primary);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-.alert-stock-bar { margin-bottom: 12px; }
+.alert-product-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+/* ── Stock stats row ──────────────────────────────────────────────────── */
+.alert-stock-bar {
+  margin-bottom: 10px;
+}
+
 .alert-stock-stats {
   display: flex;
   align-items: center;
   gap: 4px;
   flex-wrap: wrap;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
 }
+
 .alert-stock-num {
   font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 0.9rem;
+  font-weight: 800;
+  font-size: 0.85rem;
   color: var(--text-primary);
+  letter-spacing: -0.03em;
 }
+
 .alert-stock-label {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-muted);
+  font-weight: 500;
 }
-.alert-stock-sep { color: var(--border-strong); font-size: 0.7rem; margin: 0 2px; }
+
+.alert-stock-sep {
+  color: var(--border-strong);
+  font-size: 0.75rem;
+  margin: 0 2px;
+}
 
 .text-warning { color: var(--warning) !important; }
 
-/* Email draft */
+/* ── Email Draft ──────────────────────────────────────────────────────── */
 .email-draft-area {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  animation: fadeIn 0.3s ease-out forwards;
 }
-.email-draft-label { display: flex; justify-content: flex-start; }
+
+.email-draft-label {
+  display: flex;
+  justify-content: flex-start;
+}
+
 .email-textarea {
   width: 100%;
-  background: var(--bg-input);
-  border: 1px solid var(--border-strong);
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-family: var(--font-mono);
-  font-size: 0.75rem;
-  line-height: 1.6;
-  padding: 12px;
+  font-size: 0.74rem;
+  line-height: 1.65;
+  padding: 10px 12px;
   resize: vertical;
   outline: none;
-  transition: border-color var(--transition);
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
-.email-textarea:focus { border-color: var(--accent); }
+
+.email-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-glow);
+}
 
 .email-actions {
   display: flex;
   gap: 8px;
 }
 
-/* Alert action buttons row */
+/* ── Alert action buttons ─────────────────────────────────────────────── */
 .alert-actions {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
-/* Re-use fade in from PricingCard.css via index.css */
+/* ── Animations ───────────────────────────────────────────────────────── */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
 .animate-fade-in {
   animation: fadeIn 0.3s ease-out forwards;
 }

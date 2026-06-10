@@ -3,17 +3,18 @@ from typing import Any, Dict
 
 from fastapi import APIRouter
 from pydantic import BaseModel
-import google.generativeai as genai
+from openai import OpenAI  # Groq uses OpenAI-compatible API
 from pymongo import MongoClient
-from openai import OpenAI
 
 router = APIRouter()
+
 
 class GenerateEmailRequest(BaseModel):
     product_context: Dict[str, Any]
     supplier_context: Dict[str, Any]
     supplier_id: str
     action_type: str  # "initial_request" | "price_negotiation"
+
 
 def _get_query_embedding(text: str, openai_client: OpenAI) -> list:
     """Use OpenAI API for embeddings — no heavy local model needed."""
@@ -23,22 +24,23 @@ def _get_query_embedding(text: str, openai_client: OpenAI) -> list:
     )
     return response.data[0].embedding
 
+
 def _generate_with_llm(pc: Dict, sc: Dict, supplier_id: str, action_type: str) -> str:
-    api_key = os.getenv("GEMINI_API_KEY")
+    groq_api_key   = os.getenv("GROQ_API_KEY")
     openai_api_key = os.getenv("OPENAI_API_KEY")
-    mongo_uri = os.getenv("MONGO_URI")
+    mongo_uri      = os.getenv("MONGO_URI")
 
-    if not api_key:
-        return "[Error: Missing GEMINI_API_KEY]"
+    if not groq_api_key or groq_api_key == "paste_your_groq_key_here":
+        return "[Error: Missing GROQ_API_KEY — add it to your .env]"
 
-    # --- 1. Vector Search Retrieval (optional) ---
+    # --- 1. Vector Search Retrieval (optional, skipped if OpenAI quota exceeded) ---
     context_str = "No past documents found for this supplier."
     if openai_api_key and mongo_uri:
         try:
             from bson import ObjectId
             openai_client = OpenAI(api_key=openai_api_key)
-            client = MongoClient(mongo_uri)
-            db = client.get_default_database()
+            mongo_client  = MongoClient(mongo_uri)
+            db = mongo_client.get_default_database()
 
             query_text = (
                 f"pricing and volume negotiation for {pc.get('name')} {pc.get('sku')}"
@@ -67,13 +69,9 @@ def _generate_with_llm(pc: Dict, sc: Dict, supplier_id: str, action_type: str) -
         except Exception as e:
             print(f"Vector Search skipped: {e}")
 
-    # --- 2. LLM Generation with Gemini ---
-    genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash')
-
+    # --- 2. LLM Generation via Groq (free, fast, OpenAI-compatible) ---
     if action_type == "initial_request":
-        prompt = f"""
-You are an expert procurement manager writing to a supplier.
+        prompt = f"""You are an expert procurement manager writing to a supplier.
 Write an urgent, professional email to {sc.get("contact_name", "the supplier")} at {sc.get("name", "their company")}.
 
 Context:
@@ -89,11 +87,9 @@ Instructions:
 1. Include a clear subject line starting with "Subject: "
 2. Ask for availability, dispatch date, and if volume pricing applies.
 3. Be professional but firm about the urgency.
-4. Keep it under 150 words.
-"""
+4. Keep it under 150 words. Output only the email, nothing else."""
     else:
-        prompt = f"""
-You are an expert procurement manager writing to a supplier.
+        prompt = f"""You are an expert procurement manager writing to a supplier.
 Write a price negotiation email to {sc.get("contact_name", "the supplier")} at {sc.get("name", "their company")}.
 
 Context:
@@ -108,14 +104,22 @@ Instructions:
 1. Include a clear subject line starting with "Subject: "
 2. Ask for a better price due to volume and long relationship.
 3. Ask to schedule a brief call this week.
-4. Keep it under 150 words.
-"""
+4. Keep it under 150 words. Output only the email, nothing else."""
 
     try:
-        response = model.generate_content(prompt)
-        return response.text.strip()
+        groq_client = OpenAI(
+            api_key=groq_api_key,
+            base_url="https://api.groq.com/openai/v1"
+        )
+        response = groq_client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7,
+            max_tokens=300,
+        )
+        return response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"Gemini Error: {str(e)}. Falling back to templates.")
+        print(f"Groq Error: {str(e)}. Falling back to templates.")
         if action_type == "initial_request":
             return f"""Subject: Urgent Restock Request — {pc.get("name", "Product")} ({pc.get("sku", "N/A")})
 
@@ -137,6 +141,7 @@ We are planning to order {pc.get("suggested_reorder_qty")} units of {pc.get("nam
 
 Best regards,
 Seller Copilot"""
+
 
 @router.post("/rag/generate-email")
 def generate_email(payload: GenerateEmailRequest) -> Dict:

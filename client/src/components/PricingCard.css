@@ -1,65 +1,100 @@
-/* ── Pricing Card ──────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Pricing Card — Light Theme
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 .pricing-card-container {
-  padding: 24px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
   flex: 1;
+  overflow-y: auto;
 }
 
+/* ── Product header bar ───────────────────────────────────────────────── */
 .pc-header {
   display: flex;
-  justify-content: space-between;
   align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
 }
 
 .pc-title h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-bottom: 4px;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  color: var(--text-primary);
+  margin-bottom: 5px;
 }
 
 .pc-label {
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.68rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   color: var(--text-muted);
+  margin-bottom: 5px;
+  display: block;
 }
 
 .pc-competitor-box {
   text-align: right;
+  flex-shrink: 0;
 }
 
 .pc-comp-prices {
   display: flex;
-  gap: 8px;
-  margin-top: 4px;
+  gap: 6px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pc-comp-chip {
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px 7px;
   color: var(--text-secondary);
 }
 
+/* ── Current Price ────────────────────────────────────────────────────── */
 .pc-current-price {
-  background: var(--bg-input);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 16px;
+  background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 }
 
 .pc-price-display {
-  font-size: 1.8rem;
-  font-weight: 700;
+  font-size: 2rem;
+  font-weight: 800;
   font-family: var(--font-mono);
-  color: var(--text-primary);
+  color: var(--accent-dark);
+  letter-spacing: -0.05em;
+  line-height: 1;
 }
 
-/* ── Stock Editor ───────────────────────────────────────────────────────────── */
+.pc-price-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-subtle);
+  padding: 3px 8px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── Stock Editor ─────────────────────────────────────────────────────── */
 .pc-stock-editor {
   background: var(--bg-input);
   border: 1px solid var(--border);
@@ -67,101 +102,143 @@
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 11px;
 }
+
+.pc-stock-editor-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 .pc-stock-current {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .pc-stock-num {
   font-family: var(--font-mono);
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: -0.04em;
 }
 .pc-stock-num.danger { color: var(--danger); }
 .pc-stock-num.ok     { color: var(--success); }
+
 .pc-reorder-hint {
-  font-size: 0.75rem;
-  font-weight: 400;
+  font-size: 0.74rem;
+  font-weight: 500;
   color: var(--text-muted);
+  margin-left: 2px;
 }
+
 .pc-stock-input-row {
   display: flex;
   gap: 8px;
   align-items: center;
 }
+
 .pc-stock-input {
   flex: 1;
   background: var(--bg-surface);
-  border: 1px solid var(--border-strong);
+  border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   font-family: var(--font-mono);
   font-size: 0.9rem;
-  padding: 6px 10px;
+  font-weight: 600;
+  padding: 7px 11px;
   outline: none;
-  transition: border-color var(--transition);
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
-.pc-stock-input:focus { border-color: var(--accent); }
-.pc-stock-input::placeholder { color: var(--text-muted); }
 
+.pc-stock-input:focus {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-glow);
+}
 
+.pc-stock-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* ── Action Area ──────────────────────────────────────────────────────── */
 .pc-action-area {
   display: flex;
   justify-content: center;
-  padding: 10px 0;
+  padding: 4px 0;
 }
 
 .btn-optimize {
   width: 100%;
-  padding: 14px;
-  font-size: 1rem;
+  padding: 13px;
+  font-size: 0.92rem;
   display: flex;
   justify-content: center;
+  border-radius: var(--radius-md);
+  letter-spacing: -0.01em;
 }
 
 .pc-loading {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   color: var(--accent);
-  font-weight: 500;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 0.88rem;
+  width: 100%;
+  justify-content: center;
 }
 
+/* ── ML Results ───────────────────────────────────────────────────────── */
 .pc-results {
   background: var(--bg-surface);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
 }
 
 .pc-result-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
 }
+
 .pc-result-header h4 {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
+  font-weight: 700;
   color: var(--text-primary);
+  letter-spacing: -0.015em;
 }
 
 .pc-result-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 10px;
 }
 
+/* ── Animations ───────────────────────────────────────────────────────── */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.text-accent { color: #a78bfa !important; }
+.animate-fade-in {
+  animation: fadeIn 0.35s ease-out forwards;
+}
+
+.text-accent  { color: var(--accent) !important; }
 .text-success { color: var(--success) !important; }
+
+/* ── Re-run button ────────────────────────────────────────────────────── */
+.pc-rerun-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}

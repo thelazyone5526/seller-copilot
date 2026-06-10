@@ -3,12 +3,12 @@ import { optimizePrice, updateProductStock } from '../api';
 import './PricingCard.css';
 
 export default function PricingCard({ selectedProduct, onPriceUpdated }) {
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [newStock, setNewStock] = useState('');
+  const [loading, setLoading]       = useState(false);
+  const [result, setResult]         = useState(null);
+  const [newStock, setNewStock]     = useState('');
   const [stockLoading, setStockLoading] = useState(false);
 
-  // If selectedProduct changes, clear local state
+  // Clear state when the selected product changes
   React.useEffect(() => {
     setResult(null);
     setNewStock('');
@@ -18,7 +18,8 @@ export default function PricingCard({ selectedProduct, onPriceUpdated }) {
     return (
       <div className="panel-coming-soon">
         <div className="coming-soon-icon">👈</div>
-        <p>Select a product to optimize pricing</p>
+        <p>Select a product to start</p>
+        <span>Click any row on the left</span>
       </div>
     );
   }
@@ -43,7 +44,7 @@ export default function PricingCard({ selectedProduct, onPriceUpdated }) {
     try {
       await updateProductStock(selectedProduct._id, qty);
       setNewStock('');
-      if (onPriceUpdated) onPriceUpdated(); // refreshes everything
+      if (onPriceUpdated) onPriceUpdated(); // this now also syncs selectedProduct
     } catch (err) {
       alert('Error updating stock.');
     } finally {
@@ -51,44 +52,56 @@ export default function PricingCard({ selectedProduct, onPriceUpdated }) {
     }
   };
 
+  const isLowStock = selectedProduct.status === 'low_stock';
+
   return (
     <div className="pricing-card-container">
-      {/* Product Summary Header */}
+
+      {/* ── Product Summary Header ─────────────────────────────────────── */}
       <div className="pc-header">
         <div className="pc-title">
           <h3>{selectedProduct.name}</h3>
           <span className="badge badge-accent">{selectedProduct.sku}</span>
         </div>
-        
         <div className="pc-competitor-box">
-          <p className="pc-label">Competitor Prices</p>
+          <span className="pc-label">Competitor prices</span>
           <div className="pc-comp-prices">
-            <span>${selectedProduct.comp_1}</span>
-            <span>${selectedProduct.comp_2}</span>
-            <span>${selectedProduct.comp_3}</span>
+            {[selectedProduct.comp_1, selectedProduct.comp_2, selectedProduct.comp_3].map((cp, i) =>
+              cp ? <span key={i} className="pc-comp-chip">${cp}</span> : null
+            )}
           </div>
         </div>
       </div>
 
+      {/* ── Current Price ──────────────────────────────────────────────── */}
       <div className="pc-current-price">
-        <span className="pc-label">Current Selling Price</span>
-        <div className="pc-price-display">${selectedProduct.unit_price}</div>
+        <div>
+          <span className="pc-label">Current selling price</span>
+          <div className="pc-price-display">${selectedProduct.unit_price}</div>
+        </div>
+        <span className="pc-price-tag">Live</span>
       </div>
 
-      {/* Stock Editor */}
+      {/* ── Stock Editor ───────────────────────────────────────────────── */}
       <div className="pc-stock-editor">
+        <span className="pc-stock-editor-title">Stock Management</span>
         <div className="pc-stock-current">
-          <span className="pc-label">Current Stock</span>
-          <span className={`pc-stock-num ${selectedProduct.status === 'low_stock' ? 'danger' : 'ok'}`}>
-            {selectedProduct.current_stock}
-            <span className="pc-reorder-hint"> / reorder at {selectedProduct.reorder_point}</span>
-          </span>
+          <div>
+            <span className="pc-label">Current stock</span>
+            <span className={`pc-stock-num ${isLowStock ? 'danger' : 'ok'}`}>
+              {selectedProduct.current_stock}
+              <span className="pc-reorder-hint">/ reorder at {selectedProduct.reorder_point}</span>
+            </span>
+          </div>
+          {isLowStock && (
+            <span className="badge badge-danger">⚠ Low</span>
+          )}
         </div>
         <div className="pc-stock-input-row">
           <input
             type="number"
             className="pc-stock-input"
-            placeholder="New quantity..."
+            placeholder="Enter new quantity…"
             value={newStock}
             min={0}
             onChange={(e) => setNewStock(e.target.value)}
@@ -101,33 +114,35 @@ export default function PricingCard({ selectedProduct, onPriceUpdated }) {
             disabled={stockLoading || newStock === ''}
             id="stock-update-btn"
           >
-            {stockLoading ? <><span className="spinner" /> Saving...</> : 'Update'}
+            {stockLoading ? <><span className="spinner" /> Saving…</> : 'Update'}
           </button>
         </div>
       </div>
 
-      {/* Optimization Action */}
+      {/* ── Optimization Action ─────────────────────────────────────────── */}
       <div className="pc-action-area">
         {!result && !loading && (
           <button className="btn btn-primary btn-optimize" onClick={handleOptimize}>
-            ⚡ Run XGBoost Optimization
+            ⚡ Run Price Optimization
           </button>
         )}
 
         {loading && (
           <div className="pc-loading">
-            <div className="spinner"></div>
-            <span>Running ML price sweep...</span>
+            <div className="spinner" />
+            <span>Running ML price sweep…</span>
           </div>
         )}
       </div>
 
-      {/* ML Results */}
+      {/* ── ML Results ─────────────────────────────────────────────────── */}
       {result && (
         <div className="pc-results animate-fade-in">
           <div className="pc-result-header">
             <h4>Recommended Strategy</h4>
-            <span className="badge badge-success">Confidence: {(result.confidence_score * 100).toFixed(1)}%</span>
+            <span className="badge badge-success">
+              {(result.confidence_score * 100).toFixed(1)}% confidence
+            </span>
             {result.cached && <span className="badge badge-warning">Cached</span>}
           </div>
 
@@ -144,6 +159,15 @@ export default function PricingCard({ selectedProduct, onPriceUpdated }) {
               <span className="stat-label">Est. Profit</span>
               <span className="stat-value text-success">${result.estimated_profit}</span>
             </div>
+          </div>
+
+          <div className="pc-rerun-row">
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={() => { setResult(null); }}
+            >
+              ↺ Re-run
+            </button>
           </div>
         </div>
       )}

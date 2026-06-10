@@ -9,8 +9,9 @@ export default function InventoryTable({ products, selectedProduct, onSelectProd
       <table className="data-table">
         <thead>
           <tr>
-            <th>Product Details</th>
-            <th>Stock Level</th>
+            <th style={{ width: 20 }}></th>
+            <th>Product</th>
+            <th>Stock</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -18,28 +19,39 @@ export default function InventoryTable({ products, selectedProduct, onSelectProd
           {products.map((product) => {
             const isSelected = selectedProduct && selectedProduct._id === product._id;
             const isLowStock = product.status === 'low_stock';
-            
-            // Calculate stock percentage for the mini progress bar
-            const stockPercent = Math.min(100, Math.max(0, (product.current_stock / (product.reorder_point * 2)) * 100));
+            const stockPercent = Math.min(
+              100,
+              Math.max(0, (product.current_stock / (product.reorder_point * 2)) * 100)
+            );
 
             return (
-              <tr 
-                key={product._id} 
+              <tr
+                key={product._id}
                 className={`table-row ${isSelected ? 'selected' : ''} ${isLowStock ? 'low-stock-pulse' : ''}`}
                 onClick={() => onSelectProduct(product)}
               >
-                {/* Column 1: Details */}
+                {/* Selection indicator */}
+                <td style={{ padding: '13px 0 13px 14px' }}>
+                  <div className="row-select-indicator">›</div>
+                </td>
+
+                {/* Column 1: Product Details */}
                 <td>
                   <div className="product-cell">
                     <span className="product-name">{product.name}</span>
-                    <span className="product-sku">{product.sku} · ${product.unit_price}</span>
-                    <div className="comp-badges" style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
-                      {[product.comp_1, product.comp_2, product.comp_3].map((compPrice, index) => {
-                        if (!compPrice) return null;
-                        const isCheaper = compPrice > product.unit_price;
+                    <span className="product-sku">{product.sku}</span>
+                    <span className="product-price">${product.unit_price}</span>
+                    <div className="comp-row">
+                      {[product.comp_1, product.comp_2, product.comp_3].map((cp, i) => {
+                        if (!cp) return null;
+                        const isCheaper = cp > product.unit_price;
                         return (
-                          <span key={index} className={`badge ${isCheaper ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.65rem', padding: '1px 4px' }}>
-                            C{index + 1}: ${compPrice}
+                          <span
+                            key={i}
+                            className={`badge ${isCheaper ? 'badge-success' : 'badge-warning'}`}
+                            style={{ fontSize: '0.63rem', padding: '1px 5px' }}
+                          >
+                            C{i + 1}: ${cp}
                           </span>
                         );
                       })}
@@ -51,29 +63,32 @@ export default function InventoryTable({ products, selectedProduct, onSelectProd
                 <td>
                   <div className="stock-cell">
                     <div className="stock-numbers">
-                      <span className="current-stock" style={{ color: isLowStock ? 'var(--danger)' : 'var(--text-primary)' }}>
+                      <span
+                        className="current-stock"
+                        style={{ color: isLowStock ? 'var(--danger)' : 'var(--text-primary)' }}
+                      >
                         {product.current_stock}
                       </span>
                       <span className="reorder-point">/ {product.reorder_point}</span>
                     </div>
                     <div className="mini-progress-bg">
-                      <div 
-                        className="mini-progress-fill" 
-                        style={{ 
+                      <div
+                        className="mini-progress-fill"
+                        style={{
                           width: `${stockPercent}%`,
-                          background: isLowStock ? 'var(--danger)' : 'var(--success)'
-                        }} 
+                          background: isLowStock ? 'var(--danger)' : 'var(--success)',
+                        }}
                       />
                     </div>
                   </div>
                 </td>
 
-                {/* Column 3: Status Pill */}
+                {/* Column 3: Status */}
                 <td>
                   {isLowStock ? (
-                    <span className="badge badge-danger">Low Stock</span>
+                    <span className="badge badge-danger">Low</span>
                   ) : (
-                    <span className="badge badge-success">Active</span>
+                    <span className="badge badge-success">OK</span>
                   )}
                 </td>
               </tr>

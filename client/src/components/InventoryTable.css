@@ -1,4 +1,6 @@
-/* ── Inventory Table ─────────────────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Inventory Table — Light Theme
+   ═══════════════════════════════════════════════════════════════════════════ */
 .table-container {
   overflow-y: auto;
   flex: 1;
@@ -11,15 +13,15 @@
   text-align: left;
 }
 
-.data-table th {
-  font-size: 0.72rem;
-  font-weight: 600;
+.data-table thead th {
+  font-size: 0.68rem;
+  font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 12px 16px;
+  letter-spacing: 0.09em;
+  padding: 11px 16px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-surface);
+  background: var(--bg-input);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -28,25 +30,112 @@
 .table-row {
   cursor: pointer;
   border-bottom: 1px solid var(--border);
-  transition: all var(--transition);
+  transition: background var(--transition), border-left var(--transition);
 }
-.table-row:hover { background: var(--bg-card-hover); }
-.table-row.selected { background: var(--accent-subtle); border-left: 3px solid var(--accent); }
-.table-row.low-stock-pulse { animation: pulseRow 3s infinite; }
+
+.table-row:hover {
+  background: #f7f6f3;
+}
+
+.table-row.selected {
+  background: rgba(99, 102, 241, 0.05);
+  border-left: 3px solid var(--accent);
+}
+
+.table-row.low-stock-pulse {
+  animation: pulseRow 3s infinite;
+}
 
 .data-table td {
-  padding: 16px;
+  padding: 13px 16px;
   vertical-align: middle;
 }
 
-.product-cell { display: flex; flex-direction: column; gap: 2px; }
-.product-name { font-weight: 600; font-size: 0.95rem; }
-.product-sku { font-size: 0.8rem; color: var(--text-secondary); font-family: var(--font-mono); }
+/* ── Product Cell ─────────────────────────────────────────────────────── */
+.product-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
 
-.stock-cell { display: flex; flex-direction: column; gap: 6px; max-width: 120px; }
-.stock-numbers { display: flex; align-items: baseline; gap: 4px; }
-.current-stock { font-weight: 700; font-family: var(--font-mono); font-size: 1.1rem; }
-.reorder-point { font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono); }
+.product-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
 
-.mini-progress-bg { height: 4px; background: var(--bg-input); border-radius: 99px; overflow: hidden; }
-.mini-progress-fill { height: 100%; border-radius: 99px; transition: width 0.3s ease; }
+.product-sku {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.product-price {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.comp-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 3px;
+}
+
+/* ── Stock Cell ───────────────────────────────────────────────────────── */
+.stock-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 90px;
+}
+
+.stock-numbers {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.current-stock {
+  font-weight: 800;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  letter-spacing: -0.04em;
+}
+
+.reorder-point {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.mini-progress-bg {
+  height: 4px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.mini-progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.35s ease;
+}
+
+/* ── Selected row arrow indicator ────────────────────────────────────── */
+.row-select-indicator {
+  width: 20px;
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.table-row.selected .row-select-indicator {
+  opacity: 1;
+}

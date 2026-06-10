@@ -18,6 +18,13 @@ export default function App() {
       setProducts(prods);
       setAlerts(alts);
       setError(null);
+
+      // ── FIX: keep selectedProduct in sync with fresh data ──────────────
+      setSelectedProduct((prev) => {
+        if (!prev) return null;
+        const fresh = prods.find((p) => p._id === prev._id);
+        return fresh ?? prev;
+      });
     } catch (err) {
       setError('Cannot connect to backend. Please check if the server is running and VITE_API_URL is set.');
     } finally {
@@ -35,13 +42,13 @@ export default function App() {
       <div className="app-loading">
         <div className="loading-inner">
           <div className="loading-logo">
-            <span className="logo-icon">⚡</span>
-            <span className="logo-text">Seller Copilot</span>
+            <span className="logo-icon">🛒</span>
+            <span className="logo-text">Seller <span>Copilot</span></span>
           </div>
           <div className="loading-bar">
             <div className="loading-bar-fill" />
           </div>
-          <p className="loading-sub">Connecting to intelligence layer...</p>
+          <p className="loading-sub">Loading your inventory...</p>
         </div>
       </div>
     );
@@ -68,9 +75,9 @@ export default function App() {
       {/* ── Top Nav ─────────────────────────────────────────────────────── */}
       <header className="topnav">
         <div className="topnav-brand">
-          <span className="nav-logo-icon">⚡</span>
+          <div className="nav-logo-mark">🛒</div>
           <span className="nav-logo-text">Seller Copilot</span>
-          <span className="nav-badge">MVP</span>
+          <span className="nav-badge">Beta</span>
         </div>
 
         <div className="topnav-stats">
@@ -78,16 +85,16 @@ export default function App() {
             <span className="nav-stat-value">{products.length}</span>
             <span className="nav-stat-label">Products</span>
           </div>
-          <div className="nav-divider" />
           <div className="nav-stat">
-            <span className="nav-stat-value" style={{ color: lowStockCount > 0 ? 'var(--danger)' : 'var(--success)' }}>
+            <span className="nav-stat-value" style={{ color: alerts.length > 0 ? 'var(--danger)' : 'var(--success)' }}>
               {alerts.length}
             </span>
             <span className="nav-stat-label">Open Alerts</span>
           </div>
-          <div className="nav-divider" />
           <div className="nav-stat">
-            <span className="nav-stat-value" style={{ color: 'var(--warning)' }}>{lowStockCount}</span>
+            <span className="nav-stat-value" style={{ color: lowStockCount > 0 ? 'var(--warning)' : 'var(--text-primary)' }}>
+              {lowStockCount}
+            </span>
             <span className="nav-stat-label">Low Stock</span>
           </div>
         </div>
@@ -103,17 +110,21 @@ export default function App() {
       {/* ── Page Title ──────────────────────────────────────────────────── */}
       <div className="page-header">
         <div>
-          <h1>Inventory Intelligence Dashboard</h1>
-          <p className="page-sub">Real-time stock monitoring · AI price optimization · Automated supplier negotiation</p>
+          <h1>Inventory Intelligence</h1>
+          <p className="page-sub">Real-time stock · AI price optimization · Automated supplier negotiation</p>
         </div>
       </div>
+      <div className="page-header-divider" />
 
-      {/* ── 3-Column Layout (placeholders for MF-09, 10, 11) ───────────── */}
+      {/* ── 3-Column Layout ─────────────────────────────────────────────── */}
       <main className="app-grid">
         {/* Left Panel — Inventory */}
         <section className="panel glass" id="inventory-panel">
           <div className="panel-header">
-            <h2>📦 Inventory</h2>
+            <div className="panel-label">
+              <div className="panel-icon icon-purple">📦</div>
+              <h2>Inventory</h2>
+            </div>
             <span className="badge badge-accent">{products.length} products</span>
           </div>
           <InventoryTable 
@@ -126,7 +137,10 @@ export default function App() {
         {/* Center Panel — Pricing */}
         <section className="panel glass" id="pricing-panel">
           <div className="panel-header">
-            <h2>💹 Price Optimizer</h2>
+            <div className="panel-label">
+              <div className="panel-icon icon-blue">💹</div>
+              <h2>Price Optimizer</h2>
+            </div>
             <span className="badge badge-info">AI powered</span>
           </div>
           <PricingCard 
@@ -138,7 +152,10 @@ export default function App() {
         {/* Right Panel — Alerts */}
         <section className="panel glass" id="alerts-panel">
           <div className="panel-header">
-            <h2>🔔 Alerts</h2>
+            <div className="panel-label">
+              <div className="panel-icon icon-orange">🔔</div>
+              <h2>Alerts</h2>
+            </div>
             {alerts.length > 0 && (
               <span className="badge badge-danger">{alerts.length} open</span>
             )}
